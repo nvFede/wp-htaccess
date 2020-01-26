@@ -1,4 +1,4 @@
-#Configuraciones del archivo .htaccess para wordpress
+# Configuraciones del archivo .htaccess para wordpress
 
 ## htaccess-security
 
