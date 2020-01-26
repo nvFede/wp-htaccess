@@ -1,0 +1,62 @@
+## Proteger el propio archivo htaccess y htpasswd ##
+<files ~ "^.*\.([Hh][Tt])">
+order allow,deny
+deny from all
+satisfy all
+</files>
+
+## Proteger el archivo wp-config ##
+<files wp-config.php>
+order allow,deny
+deny from all
+</files>
+
+## Bloquear XML-RPC ##
+<Files xmlrpc.php>
+ Order Deny,Allow
+ Deny from all
+</Files>
+
+## Deshabilitar el listado de directorios ##
+Options All -Indexes
+
+## Bloquear acceso a la carpeta wp-includes y a los archivos ##
+<IfModule mod_rewrite.c>
+RewriteEngine On
+RewriteBase /
+RewriteRule ^wp-admin/includes/ - [F,L]
+RewriteRule !^wp-includes/ - [S=3]
+RewriteRule ^wp-includes/[^/]+\.php$ - [F,L]
+RewriteRule ^wp-includes/js/tinymce/langs/.+\.php - [F,L]
+RewriteRule ^wp-includes/theme-compat/ - [F,L]
+</IfModule>
+
+## Proteger acceso a directorios de themes y plugins ##
+RewriteCond %{REQUEST_URI} !^/wp-content/plugins/file/to/exclude\.php
+RewriteCond %{REQUEST_URI} !^/wp-content/plugins/directory/to/exclude/
+RewriteRule wp-content/plugins/(.*\.php)$ - [R=404,L]
+RewriteCond %{REQUEST_URI} !^/wp-content/themes/file/to/exclude\.php
+RewriteCond %{REQUEST_URI} !^/wp-content/themes/directory/to/exclude/
+RewriteRule wp-content/themes/(.*\.php)$ - [R=404,L]
+
+## Evitar el hotelinking ##
+RewriteEngine on
+RewriteCond %{HTTP_REFERER} !^$
+# Remplaza www.tusitio.com con la URL de tu sitio
+RewriteCond %{HTTP_REFERER} !^http(s)?://(www\.)?www.tusitio.com [NC]
+# Los archivos que coinciden con las extensiones abajo son bloqueados
+RewriteRule \.(jpg|jpeg|png|gif)$ - [NC,F,L]
+
+## Protegerse  de inyecciones de código ##
+Options +FollowSymLinks
+RewriteEngine On
+RewriteCond %{QUERY_STRING} (\<|%3C).*script.*(\>|%3E) [NC,OR]
+RewriteCond %{QUERY_STRING} GLOBALS(=|\[|\%[0-9A-Z]{0,2}) [OR]
+RewriteCond %{QUERY_STRING} _REQUEST(=|\[|\%[0-9A-Z]{0,2})
+RewriteRule ^(.*)$ index.php [F,L]
+
+
+## Forzar el uso de HTTPs ##
+RewriteEngine On
+RewriteCond %{HTTP:X-Forwarded-Proto} !https
+RewriteRule ^(.*)$ https://%{HTTP_HOST}/$1 [R=301,L]
